@@ -10,8 +10,11 @@ import (
 )
 
 type item struct {
-	Name  string `json:"name"`
-	Price string `json:"price"`
+	Name      string `json:"name"`
+	Price     string `json:"price"`
+	Link      string `json:"link"`
+	OwnerName string `json:"ownername"`
+	Location  string `json:"location"`
 }
 
 var items []item
@@ -27,19 +30,39 @@ func main() {
 		// Extract name and price
 		name := h.ChildText("h2[data-testid=subheading-text]")
 		price := h.ChildText("div[data-testid=listing-price]")
+		link := h.Request.AbsoluteURL(h.Attr("href"))
 
 		// Trim spaces from name and price
 		name = strings.TrimSpace(name)
 		price = strings.TrimSpace(price)
+		link = strings.TrimSpace(link)
 
 		// Validate name and price before adding to items
-		if name != "" && price != "" {
+		if name != "" && price != "" && link != "" {
 			// Create an item struct and append to items slice
-			item := item{Name: name, Price: price}
+			item := item{Name: name, Price: price, Link: link}
 			items = append(items, item)
 		}
+
+		c.Visit(link)
 	})
-	//data-testid="page-next"
+
+	c.OnHTML("[data-ad-id=main]", func(h *colly.HTMLElement) {
+		//data-ad-id="main"
+
+		ownername := h.ChildText("a[target=_blank][href*=public][href*=profile]")
+		location := h.ChildText("svg + span")
+		link := h.Request.URL.String()
+		for i := range items {
+			if items[i].Link == link {
+				items[i].OwnerName = strings.TrimSpace(ownername)
+				items[i].Location = strings.TrimSpace(location)
+				break
+			}
+		}
+
+	})
+
 	c.OnHTML("[data-testid=page-next]", func(h *colly.HTMLElement) {
 		next_page := h.Request.AbsoluteURL(h.Attr("href"))
 		c.Visit(next_page)
