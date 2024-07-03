@@ -47,15 +47,26 @@ func main() {
 		c.Visit(link)
 	})
 
-	c.OnHTML("[data-ad-id=main]", func(h *colly.HTMLElement) {
-		//data-ad-id="main"
+	c.OnHTML("p[data-testid=agent-name]", func(h *colly.HTMLElement) {
 
-		ownername := h.ChildText("a[target=_blank][href*=public][href*=profile]")
-		location := h.ChildText("svg + span")
+		ownername := h.Text
+
 		link := h.Request.URL.String()
 		for i := range items {
 			if items[i].Link == link {
 				items[i].OwnerName = strings.TrimSpace(ownername)
+				break
+			}
+		}
+
+	})
+
+	c.OnHTML("div[data-testid=listing-location-map]", func(h *colly.HTMLElement) {
+
+		location := h.Text
+		link := h.Request.URL.String()
+		for i := range items {
+			if items[i].Link == link {
 				items[i].Location = strings.TrimSpace(location)
 				break
 			}
@@ -74,7 +85,10 @@ func main() {
 	})
 
 	// Start scraping
-	c.Visit("https://uae.dubizzle.com/search/?keyword=s24")
+	var url string
+	fmt.Println("Enter The Link Of The Listings You Want To Scrape")
+	fmt.Scanln(&url)
+	c.Visit(url)
 
 	content, err := json.Marshal(items)
 	if err != nil {
