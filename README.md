@@ -20,5 +20,5 @@ The Dubizzle Web Scraper is a tool developed in Go using the Colly library to ef
 1. **Clone the Repository**
 
    ```bash
-   git clone https://github.com/yourusername/dubizzle-webscraper.git
-   cd dubizzle-webscraper
+   git clone https://github.com/yourusername/dubizzle-scraper.git
+   cd dubizzle-scraper
